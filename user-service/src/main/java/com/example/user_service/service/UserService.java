@@ -1,6 +1,7 @@
 package com.example.userservice.service;
 
 import com.example.userservice.dto.*;
+import com.example.userservice.kafka.UserEventProducer;
 import com.example.userservice.mapper.UserMapper;
 import com.example.userservice.model.User;
 import com.example.userservice.model.UserStatus;
@@ -27,19 +28,17 @@ public class UserService {
     private final UserRepository       userRepository;
     private final KeycloakAdminService keycloakAdminService;
     private final UserMapper           userMapper;
+    private final UserEventProducer    eventProducer;   // ← AJOUT M5
 
     @Transactional
     public UserResponse create(CreateUserRequest request) {
-        // 1. Vérifier que l'email n'existe pas déjà
         if (userRepository.existsByEmail(request.email()))
             throw new EntityExistsException("Email already used: " + request.email());
 
-        // 2. Créer dans Keycloak → récupérer le keycloakId
         String keycloakId = keycloakAdminService.createUser(
                 request.email(), request.firstName(),
                 request.lastName(), request.password());
 
-        // 3. Sauvegarder dans PostgreSQL
         User user = User.builder()
                 .keycloakId(keycloakId)
                 .email(request.email())
@@ -50,15 +49,21 @@ public class UserService {
 
         user = userRepository.save(user);
         log.info("User created: id={}, email={}", user.getId(), user.getEmail());
+
+        // ── M5 : Publier l'event Kafka APRÈS le save ──
+        // On publie après le commit BDD pour éviter d'envoyer un event
+        // si la transaction rollback
+        eventProducer.publishUserCreated(user);
+
         return userMapper.toResponse(user);
     }
 
-    // @Cacheable → si le résultat est déjà dans Redis, on ne fait pas la requête BDD
     @Cacheable(value = "users", key = "#keycloakId")
     public UserResponse findByKeycloakId(String keycloakId) {
         return userRepository.findByKeycloakId(keycloakId)
                 .map(userMapper::toResponse)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + keycloakId));
+                .orElseThrow(() ->
+                    new EntityNotFoundException("User not found: " + keycloakId));
     }
 
     public Page<UserResponse> findAll(Pageable pageable) {
@@ -66,33 +71,42 @@ public class UserService {
                 .map(userMapper::toResponse);
     }
 
-    // @CachePut → met à jour le cache Redis après la modification
     @CachePut(value = "users", key = "#keycloakId")
     @Transactional
     public UserResponse update(String keycloakId, UpdateUserRequest request) {
         User user = userRepository.findByKeycloakId(keycloakId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + keycloakId));
+                .orElseThrow(() ->
+                    new EntityNotFoundException("User not found: " + keycloakId));
 
         if (request.firstName() != null) user.setFirstName(request.firstName());
         if (request.lastName()  != null) user.setLastName(request.lastName());
 
-        return userMapper.toResponse(userRepository.save(user));
+        User saved = userRepository.save(user);
+
+        // ── M5 : Publier l'event de mise à jour ──
+        eventProducer.publishUserUpdated(saved);
+
+        return userMapper.toResponse(saved);
     }
 
-    // @CacheEvict → supprime l'entrée du cache Redis
     @CacheEvict(value = "users", key = "#keycloakId")
     @Transactional
     public void delete(String keycloakId) {
         User user = userRepository.findByKeycloakId(keycloakId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + keycloakId));
+                .orElseThrow(() ->
+                    new EntityNotFoundException("User not found: " + keycloakId));
 
-        // Soft delete — on ne supprime pas vraiment de la BDD
+        String userId = user.getId().toString(); // Sauvegarder avant soft delete
+
         user.setDeletedAt(OffsetDateTime.now());
         user.setStatus(UserStatus.DELETED);
         userRepository.save(user);
 
-        // Supprimer aussi dans Keycloak
         keycloakAdminService.deleteUser(keycloakId);
+
+        // ── M5 : Publier l'event de suppression ──
+        eventProducer.publishUserDeleted(userId, keycloakId);
+
         log.info("User soft-deleted: keycloakId={}", keycloakId);
     }
 }
