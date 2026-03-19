@@ -1,4 +1,4 @@
-package com.example.userservice.kafka;
+package com.example.user_service.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.TopicPartition;
@@ -48,7 +48,7 @@ public class KafkaConsumerConfig {
         // Désérialiser le JSON → UserEvent automatiquement
         JsonDeserializer<UserEvent> deserializer =
             new JsonDeserializer<>(UserEvent.class, false);
-        deserializer.addTrustedPackages("com.example.userservice.kafka");
+        deserializer.addTrustedPackages("com.example.user_service.kafka");
 
         return new DefaultKafkaConsumerFactory<>(
             config,

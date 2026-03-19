@@ -1,7 +1,7 @@
 
-package com.example.userservice.repository;
+package com.example.user_service.repository;
 
-import com.example.userservice.model.User;
+import com.example.user_service.model.User;
 
 import org.springframework.data.domain.Page;
 

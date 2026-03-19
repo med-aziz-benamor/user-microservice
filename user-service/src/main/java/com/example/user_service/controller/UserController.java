@@ -1,7 +1,7 @@
-package com.example.userservice.controller;
+package com.example.user_service.controller;
 
-import com.example.userservice.dto.*;
-import com.example.userservice.service.UserService;
+import com.example.user_service.dto.*;
+import com.example.user_service.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

@@ -1,5 +1,5 @@
 
-package com.example.userservice.exception;
+package com.example.user_service.exception;
 
 import jakarta.persistence.EntityExistsException;
 

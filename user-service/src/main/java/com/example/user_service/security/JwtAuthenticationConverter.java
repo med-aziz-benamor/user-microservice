@@ -1,4 +1,4 @@
-package com.example.userservice.security;
+package com.example.user_service.security;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;

@@ -1,6 +1,6 @@
-package com.example.userservice.kafka;
+package com.example.user_service.kafka;
 
-import com.example.userservice.model.User;
+import com.example.user_service.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

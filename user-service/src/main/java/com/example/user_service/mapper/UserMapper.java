@@ -1,31 +1,25 @@
+package com.example.user_service.mapper;
 
-package com.example.userservice.mapper;
-
-import com.example.userservice.dto.UserResponse;
-
-import com.example.userservice.model.User;
-
-import org.mapstruct.Mapper;
-
-import org.mapstruct.Mapping;
+import com.example.user_service.dto.UserResponse;
+import com.example.user_service.model.User;
+import org.springframework.stereotype.Component;
 
 /**
-
- * MapStruct génère l'implémentation de cette interface à la compilation
-
- * Il copie automatiquement les champs de même nom entre User et UserResponse
-
+ * Convertit User (entité BDD) → UserResponse (ce qu'on envoie au client)
+ * Version manuelle — pas besoin de MapStruct
  */
+@Component
+public class UserMapper {
 
-@Mapper(componentModel = "spring")
-
-public interface UserMapper {
-
-    // "status" dans User est un enum → on veut une String dans UserResponse
-
-    @Mapping(target = "status", expression = "java(user.getStatus().name())")
-
-    UserResponse toResponse(User user);
-
+    public UserResponse toResponse(User user) {
+        return new UserResponse(
+            user.getId(),
+            user.getKeycloakId(),
+            user.getEmail(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getStatus().name(),   // Enum → String
+            user.getCreatedAt()
+        );
+    }
 }
-

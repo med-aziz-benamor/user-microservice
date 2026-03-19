@@ -1,4 +1,4 @@
-package com.example.userservice.model;
+package com.example.user_service.model;
 
 /**
  * Les 4 états possibles d'un utilisateur

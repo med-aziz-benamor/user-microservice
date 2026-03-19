@@ -1,6 +1,6 @@
-package com.example.userservice.kafka;
+package com.example.user_service.kafka;
 
-import com.example.userservice.model.User;
+import com.example.user_service.model.User;
 import java.time.Instant;
 
 /**

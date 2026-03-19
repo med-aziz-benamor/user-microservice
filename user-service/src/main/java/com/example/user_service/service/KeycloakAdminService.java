@@ -1,5 +1,5 @@
 
-package com.example.userservice.service;
+package com.example.user_service.service;
 
 import lombok.extern.slf4j.Slf4j;
 

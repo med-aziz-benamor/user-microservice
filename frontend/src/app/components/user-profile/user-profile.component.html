@@ -1,0 +1,26 @@
+<div class="profile-container">
+
+  <ng-container *ngIf="user$ | async as user; else loading">
+    <div class="profile-card">
+      <div class="avatar">
+        {{ user.firstName[0] }}{{ user.lastName[0] }}
+      </div>
+      <h2>{{ user.firstName }} {{ user.lastName }}</h2>
+      <p class="email">{{ user.email }}</p>
+      <span class="badge" [class]="'badge-' + user.status.toLowerCase()">
+        {{ user.status }}
+      </span>
+      <p class="member-since">
+        Membre depuis : {{ user.createdAt | date:'dd/MM/yyyy' }}
+      </p>
+      <button class="btn-logout" (click)="authService.logout()">
+        Déconnexion
+      </button>
+    </div>
+  </ng-container>
+
+  <ng-template #loading>
+    <p>Chargement du profil...</p>
+  </ng-template>
+
+</div>

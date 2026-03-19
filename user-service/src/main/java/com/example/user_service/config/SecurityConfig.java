@@ -1,6 +1,6 @@
-package com.example.userservice.config;
+package com.example.user_service.config;
 
-import com.example.userservice.security.JwtAuthenticationConverter;
+import com.example.user_service.security.JwtAuthenticationConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

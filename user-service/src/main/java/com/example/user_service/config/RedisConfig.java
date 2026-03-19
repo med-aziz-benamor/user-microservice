@@ -1,14 +1,34 @@
-package com.example.userservice.config;
+package com.example.user_service.config;
 
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 
-/**
- * @EnableCaching active les annotations @Cacheable, @CachePut, @CacheEvict
- * Spring utilisera Redis automatiquement (configuré dans application.yml)
- */
+import java.time.Duration;
+
 @Configuration
 @EnableCaching
 public class RedisConfig {
-    // Spring Boot auto-configure Redis — rien d'autre à faire ici
+
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory factory) {
+        RedisCacheConfiguration config = RedisCacheConfiguration
+            .defaultCacheConfig()
+            // Les entrées expirent après 10 minutes
+            .entryTtl(Duration.ofMinutes(10))
+            // Stocker en JSON lisible
+            .serializeValuesWith(
+                RedisSerializationContext.SerializationPair
+                    .fromSerializer(new GenericJackson2JsonRedisSerializer())
+            );
+
+        return RedisCacheManager.builder(factory)
+            .cacheDefaults(config)
+            .build();
+    }
 }

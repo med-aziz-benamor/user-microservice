@@ -1,11 +1,11 @@
-package com.example.userservice.service;
+package com.example.user_service.service;
 
-import com.example.userservice.dto.*;
-import com.example.userservice.kafka.UserEventProducer;
-import com.example.userservice.mapper.UserMapper;
-import com.example.userservice.model.User;
-import com.example.userservice.model.UserStatus;
-import com.example.userservice.repository.UserRepository;
+import com.example.user_service.dto.*;
+import com.example.user_service.kafka.UserEventProducer;
+import com.example.user_service.mapper.UserMapper;
+import com.example.user_service.model.User;
+import com.example.user_service.model.UserStatus;
+import com.example.user_service.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
