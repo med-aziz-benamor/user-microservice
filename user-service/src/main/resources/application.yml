@@ -53,7 +53,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/myapp-realm
+          jwk-set-uri: http://localhost:8080/realms/myapp-realm/protocol/openid-connect/certs
 
 # ── Config Keycloak Admin Client ──
 keycloak:

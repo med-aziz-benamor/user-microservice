@@ -1,26 +1,53 @@
-import { Component, OnInit }  from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { UserService, UserResponse } from '../../services/user.service';
-import { AuthService }        from '../../services/auth.service';
-import { Observable }         from 'rxjs';
+import { Component, OnInit }       from '@angular/core';
+import { CommonModule, DatePipe }  from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { KeycloakService }         from 'keycloak-angular';
+import { environment }             from '../../../environments/environment';
+
+export interface UserResponse {
+  id: string;
+  keycloakId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  status: string;
+  createdAt: string;
+}
 
 @Component({
   selector:    'app-user-profile',
   standalone:  true,
-  imports:     [CommonModule],
+  imports:     [CommonModule, DatePipe],
   templateUrl: './user-profile.component.html',
 })
 export class UserProfileComponent implements OnInit {
 
-  user$!: Observable<UserResponse>;
+  user: UserResponse | null = null;
+  error: string | null = null;
+  loading = true;
 
   constructor(
-    private userService: UserService,
-    public  authService: AuthService
+    private http:     HttpClient,
+    private keycloak: KeycloakService
   ) {}
 
-  ngOnInit(): void {
-    // Appel GET /api/users/me → token JWT ajouté automatiquement
-    this.user$ = this.userService.getMyProfile();
+  async ngOnInit(): Promise<void> {
+    try {
+      const token = await this.keycloak.getToken();
+      this.http.get<UserResponse>(
+        `${environment.apiUrl}/users/me`,
+        { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+      ).subscribe({
+        next:  (user) => { this.user = user;  this.loading = false; },
+        error: (err)  => { this.error = 'Erreur chargement profil'; this.loading = false; }
+      });
+    } catch (err) {
+      this.error   = 'Erreur authentification';
+      this.loading = false;
+    }
+  }
+
+  logout(): void {
+    this.keycloak.logout(window.location.origin);
   }
 }
